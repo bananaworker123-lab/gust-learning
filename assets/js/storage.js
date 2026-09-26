@@ -28,7 +28,8 @@ function getCourseProgress(courseId, totalLessons) {
   const p = loadProgress();
   const courseP = p[String(courseId)] || {};
   const done = Object.values(courseP).filter(Boolean).length;
-  const total = totalLessons > 0 ? totalLessons : Object.keys(courseP).length;
+  const cachedCount = p._counts ? p._counts[String(courseId)] : undefined;
+  const total = totalLessons > 0 ? totalLessons : (cachedCount ?? Object.keys(courseP).length);
   return { done, total };
 }
 

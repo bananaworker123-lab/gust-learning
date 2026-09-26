@@ -74,6 +74,21 @@ async function initDriveCourse() {
     if (!ok) { showDriveConnectUI(); return; }
   }
   await driveNavigate(courseData.driveId, courseData.title, true);
+  // นับไฟล์จริงทั้งหมด (background) แล้วเก็บลง progress
+  _cacheDriveLessonCount(courseData.driveId, courseId);
+}
+
+async function _cacheDriveLessonCount(folderId, cId) {
+  try {
+    const files = await loadVideosFromFolder(folderId);
+    const p = loadProgress();
+    if (!p._counts) p._counts = {};
+    if (p._counts[String(cId)] !== files.length) {
+      p._counts[String(cId)] = files.length;
+      saveProgress(p);
+      scheduleDriveProgressSave();
+    }
+  } catch {}
 }
 
 function showDriveConnectUI() {
