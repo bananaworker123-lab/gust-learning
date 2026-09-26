@@ -48,7 +48,25 @@ async function init() {
   if (hasDriveAccess()) {
     try {
       const driveProgress = await loadDriveProgress();
-      if (driveProgress) saveProgress(driveProgress);
+      if (driveProgress) {
+        // ล้าง integer keys เก่า (format ก่อนหน้า) ออกจาก Drive course progress
+        let migrated = false;
+        if (courseData.driveId) {
+          const key = String(courseId);
+          if (driveProgress[key]) {
+            const cleaned = {};
+            for (const [k, v] of Object.entries(driveProgress[key])) {
+              if (!/^\d+$/.test(k)) cleaned[k] = v;
+            }
+            if (Object.keys(cleaned).length !== Object.keys(driveProgress[key]).length) {
+              driveProgress[key] = cleaned;
+              migrated = true;
+            }
+          }
+        }
+        saveProgress(driveProgress);
+        if (migrated) scheduleDriveProgressSave();
+      }
     } catch {}
   }
 
@@ -149,9 +167,11 @@ async function driveNavigate(folderId, folderName, reset = false) {
       courseData.lessons = allVideos.map((v) => ({
         v: v.id, t: v.name.replace(/\.[^.]+$/, ''), d: '', driveId: v.id, section: v.section, type: v.type || 'video',
       }));
-      console.log('[DEBUG] lessons loaded in folder:', folderId, 'first 3 IDs:', courseData.lessons.slice(0,3).map(l=>l.v));
       const prog = loadProgress()[String(courseId)] || {};
-      console.log('[DEBUG] progress keys:', Object.keys(prog));
+      const trueKeys = Object.entries(prog).filter(([,v])=>v).map(([k])=>k);
+      console.log('[DEBUG] folder:', folderId, '| total lessons:', courseData.lessons.length);
+      console.log('[DEBUG] first 3 lesson IDs:', courseData.lessons.slice(0,3).map(l=>({id:l.v,name:l.t})));
+      console.log('[DEBUG] progress TRUE keys:', trueKeys);
       renderLessonList();
       selectLesson(0);
       updateProgress();
