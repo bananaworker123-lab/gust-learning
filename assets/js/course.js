@@ -431,6 +431,7 @@ document.getElementById('btn-toggle-panel').addEventListener('click', () => {
   panel.classList.toggle('collapsed');
   const collapsed = panel.classList.contains('collapsed');
   icon.className = collapsed ? 'fas fa-chevron-left' : 'fas fa-chevron-right';
+  // panel ซ่อนอยู่ → icon ‹ (กดเพื่อเปิด), panel แสดง → icon › (กดเพื่อซ่อน)
 });
 
 // ===== Controls =====
