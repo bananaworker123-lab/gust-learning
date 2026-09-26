@@ -44,29 +44,26 @@ async function init() {
   document.getElementById('course-title').textContent = courseData.title;
   document.getElementById('btn-back').href = `index.html?subject=${subjectKey}`;
 
-  // Drive คือ source of truth — อ่านจาก Drive เขียนทับ localStorage
+  // Drive คือ source of truth — เขียนทับ localStorage เสมอ (null = ว่าง)
   if (hasDriveAccess()) {
     try {
       const driveProgress = await loadDriveProgress();
-      if (driveProgress) {
-        // ล้าง integer keys เก่า (format ก่อนหน้า) ออกจาก Drive course progress
-        let migrated = false;
-        if (courseData.driveId) {
-          const key = String(courseId);
-          if (driveProgress[key]) {
-            const cleaned = {};
-            for (const [k, v] of Object.entries(driveProgress[key])) {
-              if (!/^\d+$/.test(k)) cleaned[k] = v;
-            }
-            if (Object.keys(cleaned).length !== Object.keys(driveProgress[key]).length) {
-              driveProgress[key] = cleaned;
-              migrated = true;
-            }
-          }
+      const p = driveProgress || {};
+      // ล้าง integer keys เก่า (format ก่อนหน้า) ออกจาก Drive course progress
+      let migrated = false;
+      if (courseData.driveId && p[String(courseId)]) {
+        const key = String(courseId);
+        const cleaned = {};
+        for (const [k, v] of Object.entries(p[key])) {
+          if (!/^\d+$/.test(k)) cleaned[k] = v;
         }
-        saveProgress(driveProgress);
-        if (migrated) scheduleDriveProgressSave();
+        if (Object.keys(cleaned).length !== Object.keys(p[key]).length) {
+          p[key] = cleaned;
+          migrated = true;
+        }
       }
+      saveProgress(p);
+      if (migrated) scheduleDriveProgressSave();
     } catch {}
   }
 

@@ -3,13 +3,13 @@ import { hasDriveAccess, connectDrive, disconnectDrive, getStoredUserInfo, fetch
 
 // ===== Auth =====
 async function syncAndRender() {
-  try {
-    const driveProgress = await loadDriveProgress();
-    if (driveProgress) {
-      // Drive คือ source of truth — เขียนทับ localStorage ทั้งหมด
-      saveProgress(driveProgress);
-    }
-  } catch {}
+  if (hasDriveAccess()) {
+    try {
+      const driveProgress = await loadDriveProgress();
+      // Drive คือ source of truth — เขียนทับ localStorage เสมอ (null = ว่าง)
+      saveProgress(driveProgress || {});
+    } catch {}
+  }
   const lastSubject = localStorage.getItem('lastSubject') || 'math';
   switchSubject(lastSubject);
 }
