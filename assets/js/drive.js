@@ -54,11 +54,17 @@ export function connectDrive(silent = false) {
   });
 }
 
-// ขอ token ใหม่แบบ silent ถ้าหมดอายุ
+// ขอ token ใหม่แบบ silent ถ้าหมดอายุ (ไม่ใช่ครั้งแรก)
 export async function ensureDriveAccess() {
   if (_isTokenValid()) return true;
+  // ไม่เคย login เลย → ไม่ต้อง try (จะค้าง)
+  if (!sessionStorage.getItem(TOKEN_KEY)) return false;
+  // token มีแต่หมดอายุ → ลอง silent refresh พร้อม timeout
   try {
-    await connectDrive(true);
+    await Promise.race([
+      connectDrive(true),
+      new Promise((_, reject) => setTimeout(() => reject(new Error('timeout')), 5000)),
+    ]);
     return true;
   } catch {
     return false;
