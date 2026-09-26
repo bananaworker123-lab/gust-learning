@@ -1,5 +1,5 @@
 // Course page logic
-import { hasDriveAccess, connectDrive, loadVideosFromFolder } from './drive.js';
+import { hasDriveAccess, connectDrive, loadVideosFromFolder, listFolderContents } from './drive.js';
 
 const params = new URLSearchParams(location.search);
 const subjectKey = params.get('subject') || 'math';
@@ -87,26 +87,18 @@ async function loadDriveLessons() {
   const list = document.getElementById('lesson-list');
   list.innerHTML = '<div style="padding:20px;text-align:center"><div class="spinner"></div></div>';
   const wrapper = document.getElementById('video-wrapper');
-  wrapper.innerHTML = '<div class="video-placeholder"><div class="icon">⏳</div><p>กำลังโหลดรายการบทเรียน...</p></div>';
+  wrapper.innerHTML = '<div class="video-placeholder"><div class="icon">⏳</div><p>กำลังโหลดรายการ...</p></div>';
 
   try {
-    const videos = await loadVideosFromFolder(courseData.driveId);
-    if (videos.length === 0) {
-      list.innerHTML = '<div style="padding:20px;text-align:center;color:var(--text-secondary)">ไม่พบวีดีโอในโฟลเดอร์นี้</div>';
+    const { folders, videos } = await listFolderContents(courseData.driveId);
+    if (folders.length > 0) {
+      showDriveFolderPicker(folders);
+    } else if (videos.length > 0) {
+      await enterDriveFolder(courseData.driveId, courseData.title);
+    } else {
+      list.innerHTML = '<div style="padding:20px;text-align:center;color:var(--text-secondary)">ไม่พบไฟล์ในโฟลเดอร์นี้</div>';
       wrapper.innerHTML = '<div class="video-placeholder"><div class="icon">📂</div><p>ไม่พบวีดีโอ</p></div>';
-      return;
     }
-    // Map Drive videos → lesson format
-    courseData.lessons = videos.map((v, i) => ({
-      v: i,
-      t: v.name.replace(/\.[^.]+$/, ''), // remove extension
-      d: '',
-      driveId: v.id,
-      section: v.section,
-    }));
-    renderLessonList();
-    selectLesson(0);
-    updateProgress();
   } catch (e) {
     if (e.message === 'not_connected') {
       showDriveConnectUI();
@@ -114,6 +106,69 @@ async function loadDriveLessons() {
       list.innerHTML = `<div style="padding:20px;text-align:center;color:var(--text-secondary)">โหลดไม่สำเร็จ: ${e.message}</div>`;
     }
   }
+}
+
+function showDriveFolderPicker(folders) {
+  document.getElementById('lesson-filter-tabs').style.display = 'none';
+  document.getElementById('btn-mark-all').style.display = 'none';
+  setDriveBackBtn(null);
+
+  const wrapper = document.getElementById('video-wrapper');
+  wrapper.classList.remove('drive-mode');
+  wrapper.innerHTML = '<div class="video-placeholder"><div class="icon">📁</div><p>เลือกโฟลเดอร์เพื่อดูบทเรียน</p></div>';
+
+  const list = document.getElementById('lesson-list');
+  list.innerHTML = '';
+  folders.forEach(folder => {
+    const item = document.createElement('div');
+    item.className = 'lesson-item drive-folder-item';
+    item.innerHTML = `<span style="font-size:20px">📁</span>
+      <div class="lesson-item-info"><div class="lesson-item-title">${folder.name}</div></div>
+      <span style="color:var(--text-secondary);font-size:18px">›</span>`;
+    item.addEventListener('click', () => enterDriveFolder(folder.id, folder.name));
+    list.appendChild(item);
+  });
+}
+
+async function enterDriveFolder(folderId, folderName) {
+  document.getElementById('lesson-filter-tabs').style.display = '';
+  document.getElementById('btn-mark-all').style.display = '';
+  setDriveBackBtn(folderName);
+
+  const list = document.getElementById('lesson-list');
+  list.innerHTML = '<div style="padding:20px;text-align:center"><div class="spinner"></div></div>';
+
+  try {
+    const videos = await loadVideosFromFolder(folderId);
+    if (videos.length === 0) {
+      list.innerHTML = '<div style="padding:20px;text-align:center;color:var(--text-secondary)">ไม่พบวีดีโอ</div>';
+      return;
+    }
+    courseData.lessons = videos.map((v, i) => ({
+      v: i, t: v.name.replace(/\.[^.]+$/, ''), d: '', driveId: v.id, section: v.section,
+    }));
+    renderLessonList();
+    selectLesson(0);
+    updateProgress();
+  } catch (e) {
+    list.innerHTML = `<div style="padding:20px;text-align:center;color:var(--text-secondary)">โหลดไม่สำเร็จ: ${e.message}</div>`;
+  }
+}
+
+function setDriveBackBtn(folderName) {
+  let btn = document.getElementById('drive-back-btn');
+  if (!folderName) {
+    if (btn) btn.remove();
+    return;
+  }
+  if (!btn) {
+    btn = document.createElement('button');
+    btn.id = 'drive-back-btn';
+    btn.className = 'drive-back-btn';
+    btn.addEventListener('click', loadDriveLessons);
+    document.querySelector('.lesson-panel-header').prepend(btn);
+  }
+  btn.innerHTML = `‹ กลับ`;
 }
 
 // ===== Lesson Filter =====

@@ -102,10 +102,19 @@ async function _collectVideos(folderId, section, results) {
   }
 }
 
-// โหลดวีดีโอทั้งหมดจาก root folder (recursive ทุกชั้น)
-export async function loadVideosFromFolder(rootFolderId) {
+// โหลดวีดีโอทั้งหมดจาก folder (recursive)
+export async function loadVideosFromFolder(folderId) {
   const videos = [];
-  await _collectVideos(rootFolderId, '', videos);
+  await _collectVideos(folderId, '', videos);
   videos.sort((a, b) => a.name.localeCompare(b.name, 'th'));
   return videos;
+}
+
+// ดูว่า folder มีอะไรบ้างใน level บนสุด
+export async function listFolderContents(folderId) {
+  const items = await listFolder(folderId);
+  return {
+    folders: items.filter(i => i.mimeType === 'application/vnd.google-apps.folder'),
+    videos: items.filter(isVideo),
+  };
 }
