@@ -2,7 +2,7 @@
 // ต้องใส่ Client ID ที่ได้จาก Google Cloud Console
 const DRIVE_CLIENT_ID = '700846047412-e5e9apph1s53d2h1jm3b8q8sbnvk2ukt.apps.googleusercontent.com';
 
-const DRIVE_SCOPE = 'https://www.googleapis.com/auth/drive.readonly';
+const DRIVE_SCOPE = 'https://www.googleapis.com/auth/drive.readonly https://www.googleapis.com/auth/drive.file';
 const TOKEN_KEY = 'bio_drive_token';
 const TOKEN_EXP_KEY = 'bio_drive_token_exp';
 
@@ -27,7 +27,7 @@ export function hasDriveAccess() {
   return _isTokenValid();
 }
 
-export function connectDrive() {
+export function connectDrive(silent = false) {
   return new Promise((resolve, reject) => {
     if (!DRIVE_CLIENT_ID) {
       reject(new Error('no_client_id'));
@@ -49,8 +49,20 @@ export function connectDrive() {
       _saveToken(resp.access_token, resp.expires_in || 3600);
       resolve(resp.access_token);
     };
-    _tokenClient.requestAccessToken({ prompt: hasDriveAccess() ? '' : 'select_account' });
+    // silent = ไม่แสดง account picker ถ้า login อยู่แล้ว
+    _tokenClient.requestAccessToken({ prompt: silent ? '' : 'select_account' });
   });
+}
+
+// ขอ token ใหม่แบบ silent ถ้าหมดอายุ
+export async function ensureDriveAccess() {
+  if (_isTokenValid()) return true;
+  try {
+    await connectDrive(true);
+    return true;
+  } catch {
+    return false;
+  }
 }
 
 export function disconnectDrive() {
@@ -60,6 +72,60 @@ export function disconnectDrive() {
   }
   sessionStorage.removeItem(TOKEN_KEY);
   sessionStorage.removeItem(TOKEN_EXP_KEY);
+}
+
+// ===== Progress sync via Drive =====
+const PROGRESS_FILENAME = 'gust-learning-progress.json';
+let _progressFileId = null;
+
+export async function loadDriveProgress() {
+  const q = encodeURIComponent(`name='${PROGRESS_FILENAME}' and trashed=false`);
+  const data = await _driveRequest(
+    `https://www.googleapis.com/drive/v3/files?q=${q}&fields=files(id)&spaces=drive`
+  );
+  if (data.files && data.files.length > 0) {
+    _progressFileId = data.files[0].id;
+    const token = getDriveToken();
+    const resp = await fetch(
+      `https://www.googleapis.com/drive/v3/files/${_progressFileId}?alt=media`,
+      { headers: { Authorization: 'Bearer ' + token } }
+    );
+    if (resp.ok) return resp.json();
+  }
+  return null;
+}
+
+export async function saveDriveProgress(progressData) {
+  const token = getDriveToken();
+  if (!token) return;
+  const boundary = 'gust_progress_boundary';
+  const content = JSON.stringify(progressData);
+  const body = [
+    `--${boundary}`,
+    'Content-Type: application/json; charset=UTF-8',
+    '',
+    JSON.stringify({ name: PROGRESS_FILENAME, mimeType: 'application/json' }),
+    `--${boundary}`,
+    'Content-Type: application/json',
+    '',
+    content,
+    `--${boundary}--`,
+  ].join('\r\n');
+  const url = _progressFileId
+    ? `https://www.googleapis.com/upload/drive/v3/files/${_progressFileId}?uploadType=multipart`
+    : 'https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart';
+  const resp = await fetch(url, {
+    method: _progressFileId ? 'PATCH' : 'POST',
+    headers: {
+      Authorization: 'Bearer ' + token,
+      'Content-Type': `multipart/related; boundary=${boundary}`,
+    },
+    body,
+  });
+  if (resp.ok) {
+    const result = await resp.json();
+    _progressFileId = result.id;
+  }
 }
 
 async function _driveRequest(url) {

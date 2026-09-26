@@ -1,5 +1,5 @@
 // Course page logic
-import { hasDriveAccess, connectDrive, loadVideosFromFolder, listFolderContents } from './drive.js';
+import { hasDriveAccess, connectDrive, ensureDriveAccess, loadVideosFromFolder, listFolderContents, loadDriveProgress, saveDriveProgress } from './drive.js';
 
 const params = new URLSearchParams(location.search);
 const subjectKey = params.get('subject') || 'math';
@@ -12,7 +12,18 @@ let courseData = null;
 let currentLessonIdx = 0;
 let player = null;
 let lessonFilter = 'all';
-let isDriveCourse = false; // biology Drive-based course
+let isDriveCourse = false;
+let _driveProgressTimer = null;
+
+function scheduleDriveProgressSave() {
+  if (!isDriveCourse) return;
+  clearTimeout(_driveProgressTimer);
+  _driveProgressTimer = setTimeout(async () => {
+    try {
+      await saveDriveProgress(loadProgress());
+    } catch (e) { /* silent fail */ }
+  }, 1500);
+}
 
 // ===== Init =====
 async function init() {
@@ -51,10 +62,19 @@ async function init() {
 let driveFolderStack = []; // [{id, name}]
 
 async function initDriveCourse() {
+  // ลอง silent refresh ก่อนถ้า token หมด
   if (!hasDriveAccess()) {
-    showDriveConnectUI();
-    return;
+    const ok = await ensureDriveAccess();
+    if (!ok) { showDriveConnectUI(); return; }
   }
+  // โหลด progress จาก Drive มาเขียนทับ localStorage
+  try {
+    const driveProgress = await loadDriveProgress();
+    if (driveProgress) {
+      const local = loadProgress();
+      saveProgress({ ...local, ...driveProgress });
+    }
+  } catch { /* ถ้าโหลดไม่ได้ใช้ local แทน */ }
   await driveNavigate(courseData.driveId, courseData.title, true);
 }
 
@@ -213,6 +233,7 @@ function renderLessonList() {
       e.stopPropagation();
       setLesson(courseId, lesson.v, cb.checked);
       updateProgress();
+      scheduleDriveProgressSave();
     });
 
     const info = document.createElement('div');
@@ -456,6 +477,7 @@ document.getElementById('btn-mark-watched').addEventListener('click', () => {
   const newVal = !isLessonWatched(courseId, lesson.v);
   setLesson(courseId, lesson.v, newVal);
   updateProgress();
+  scheduleDriveProgressSave();
   showToast(newVal ? 'ทำเครื่องหมายว่าดูแล้ว ✅' : 'ยกเลิกเครื่องหมาย');
 });
 
@@ -465,6 +487,7 @@ document.getElementById('btn-mark-all').addEventListener('click', () => {
   courseData.lessons.forEach(l => { progress[String(courseId)][String(l.v)] = true; });
   saveProgress(progress);
   updateProgress();
+  scheduleDriveProgressSave();
   showToast('ทำเครื่องหมายทุกบทเรียนว่าดูแล้ว ✅');
 });
 
