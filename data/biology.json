@@ -1,0 +1,39 @@
+{
+  "subject": "ชีววิทยา",
+  "icon": "🧬",
+  "_driveEnabled": true,
+  "sections": [
+    {
+      "id": "m1",
+      "label": "Module1 พื้นฐานของสิ่งมีชีวิต เล่มที่ 1",
+      "driveId": "1iowuJ8FSda6ylaR5SCCRoh9FJ9hhhbe0",
+      "courses": [
+        { "id": 1001, "title": "Module1 พื้นฐานของสิ่งมีชีวิต เล่มที่ 1", "driveId": "1iowuJ8FSda6ylaR5SCCRoh9FJ9hhhbe0", "duration": "", "lessons": [] }
+      ]
+    },
+    {
+      "id": "m2",
+      "label": "Module2 Animal, Human เล่ม 1 ปี 69",
+      "driveId": "1yCKQZlkXe3tLq9-ECDj1La63rIMf_4IB",
+      "courses": [
+        { "id": 1002, "title": "Module2 Animal, Human เล่ม 1 ปี 69", "driveId": "1yCKQZlkXe3tLq9-ECDj1La63rIMf_4IB", "duration": "", "lessons": [] }
+      ]
+    },
+    {
+      "id": "m3",
+      "label": "Module3 Animal, Human เล่ม 2",
+      "driveId": "1vHD4VgZsfLm8D902xxyKyusPAU5Xz93v",
+      "courses": [
+        { "id": 1003, "title": "Module3 Animal, Human เล่ม 2", "driveId": "1vHD4VgZsfLm8D902xxyKyusPAU5Xz93v", "duration": "", "lessons": [] }
+      ]
+    },
+    {
+      "id": "m4",
+      "label": "Module4 พืช เล่ม 1 ปี 69",
+      "driveId": "1GwdhG3pVKNQ9l4tiopK0N6I3XwC_x2lY",
+      "courses": [
+        { "id": 1004, "title": "Module4 พืช เล่ม 1 ปี 69", "driveId": "1GwdhG3pVKNQ9l4tiopK0N6I3XwC_x2lY", "duration": "", "lessons": [] }
+      ]
+    }
+  ]
+}

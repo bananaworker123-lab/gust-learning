@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Loading... — My Learning</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@400;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/video.js@8.6.0/dist/video-js.min.css">
+  <link rel="stylesheet" href="assets/css/style.css">
+</head>
+<body>
+
+<div class="course-layout">
+  <!-- Top bar -->
+  <div class="course-topbar">
+    <a href="index.html" class="btn-back" id="btn-back">
+      <i class="fas fa-arrow-left"></i> กลับ
+    </a>
+    <div class="topbar-title" id="course-title">กำลังโหลด...</div>
+    <div class="topbar-progress">
+      <div class="topbar-progress-track">
+        <div class="topbar-progress-fill" id="topbar-progress-fill" style="width:0%"></div>
+      </div>
+      <span id="topbar-progress-count">0/0</span>
+    </div>
+  </div>
+
+  <!-- Body -->
+  <div class="course-body">
+    <!-- Video panel -->
+    <div class="video-panel">
+      <div class="video-wrapper" id="video-wrapper">
+        <div class="video-placeholder">
+          <div class="icon">⏳</div>
+          <p>กำลังโหลด...</p>
+        </div>
+      </div>
+
+      <div class="video-controls-bar">
+        <div class="lesson-nav">
+          <button class="btn-nav" id="btn-prev" disabled>
+            <i class="fas fa-chevron-left"></i> ก่อนหน้า
+          </button>
+          <button class="btn-nav" id="btn-next">
+            ถัดไป <i class="fas fa-chevron-right"></i>
+          </button>
+        </div>
+        <span class="lesson-counter" id="lesson-counter">-</span>
+        <button class="btn-mark-watched" id="btn-mark-watched">
+          ☐ ทำเครื่องหมายว่าดูแล้ว
+        </button>
+      </div>
+    </div>
+
+    <!-- Lesson list panel -->
+    <div class="lesson-panel">
+      <div class="lesson-panel-header">
+        <div class="lesson-panel-title-row">
+          บทเรียน
+          <button class="btn-mark-all" id="btn-mark-all">ทำเครื่องหมายทั้งหมด</button>
+        </div>
+        <div class="lesson-filter-tabs" id="lesson-filter-tabs">
+          <button class="lesson-filter-btn active" data-filter="all">ทั้งหมด</button>
+          <button class="lesson-filter-btn" data-filter="watched">ดูแล้ว</button>
+          <button class="lesson-filter-btn" data-filter="unwatched">ยังไม่ได้ดู</button>
+        </div>
+      </div>
+      <div class="lesson-list" id="lesson-list"></div>
+    </div>
+  </div>
+</div>
+
+<div class="toast-container" id="toast-container"></div>
+
+<script src="https://cdn.jsdelivr.net/npm/video.js@8.6.0/dist/video.min.js"></script>
+<script src="https://accounts.google.com/gsi/client" async></script>
+<script src="assets/js/storage.js"></script>
+<script type="module" src="assets/js/course.js"></script>
+</body>
+</html>

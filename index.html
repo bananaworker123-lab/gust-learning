@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>My Learning Dashboard</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@400;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="stylesheet" href="assets/css/style.css">
+</head>
+<body>
+
+<div class="app-layout">
+  <!-- Sidebar -->
+  <aside class="sidebar">
+    <div class="sidebar-logo">
+      <span>📚</span> My Learning
+    </div>
+
+    <div class="sidebar-section">
+      <div class="sidebar-label">วิชา</div>
+      <a href="#" class="subject-tab active" data-subject="math">
+        <span class="icon"><span class="subj-badge math-badge"><i class="fas fa-calculator"></i></span></span>
+        <span class="name">คณิตศาสตร์</span>
+      </a>
+      <a href="#" class="subject-tab bio" data-subject="biology">
+        <span class="icon"><span class="subj-badge bio-badge"><i class="fas fa-seedling"></i></span></span>
+        <span class="name">ชีววิทยา</span>
+      </a>
+      <a href="#" class="subject-tab physics" data-subject="physics">
+        <span class="icon"><span class="subj-badge physics-badge"><i class="fas fa-bolt"></i></span></span>
+        <span class="name">ฟิสิกส์</span>
+      </a>
+    </div>
+
+    <div class="sidebar-actions">
+      <button class="btn-sidebar" id="btn-export">
+        <i class="fas fa-download"></i> Export Progress
+      </button>
+      <button class="btn-sidebar" id="btn-import">
+        <i class="fas fa-upload"></i> Import Progress
+      </button>
+      <input type="file" id="import-input" accept=".json" style="display:none">
+    </div>
+  </aside>
+
+  <!-- Main -->
+  <div class="main-content">
+    <div id="subject-header" class="subject-header">
+      <h1>📐 คณิตศาสตร์ ม.ต้น</h1>
+      <div class="header-stats">
+        <div class="stat-item">กำลังโหลด...</div>
+      </div>
+    </div>
+
+    <div id="section-filter" class="section-filter"></div>
+
+    <div id="courses-area" class="courses-area">
+      <div style="padding:40px;text-align:center"><div class="spinner"></div></div>
+    </div>
+  </div>
+</div>
+
+<div class="toast-container" id="toast-container"></div>
+
+<script src="assets/js/storage.js"></script>
+<script src="assets/js/index.js"></script>
+</body>
+</html>
