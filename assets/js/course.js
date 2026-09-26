@@ -114,7 +114,7 @@ async function driveNavigate(folderId, folderName, reset = false) {
         return;
       }
       courseData.lessons = allVideos.map((v, i) => ({
-        v: i, t: v.name.replace(/\.[^.]+$/, ''), d: '', driveId: v.id, section: v.section,
+        v: i, t: v.name.replace(/\.[^.]+$/, ''), d: '', driveId: v.id, section: v.section, type: v.type || 'video',
       }));
       renderLessonList();
       selectLesson(0);
@@ -204,8 +204,9 @@ function renderLessonList() {
 
     const info = document.createElement('div');
     info.className = 'lesson-item-info';
+    const typeIcon = lesson.type === 'pdf' ? '📄 ' : '';
     info.innerHTML = `
-      <div class="lesson-item-title">${lesson.t}</div>
+      <div class="lesson-item-title">${typeIcon}${lesson.t}</div>
       <div class="lesson-item-dur">${lesson.d}</div>`;
 
     const num = document.createElement('div');

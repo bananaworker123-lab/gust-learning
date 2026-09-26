@@ -91,23 +91,33 @@ function isVideo(f) {
   return f.mimeType.startsWith('video/') || /\.(mp4|mov|avi|mkv|webm|m4v)$/i.test(f.name);
 }
 
-async function _collectVideos(folderId, section, results) {
+function isPdf(f) {
+  return f.mimeType === 'application/pdf' || /\.pdf$/i.test(f.name);
+}
+
+function isDisplayable(f) {
+  return isVideo(f) || isPdf(f);
+}
+
+async function _collectFiles(folderId, section, results) {
   const items = await listFolder(folderId);
   for (const item of items) {
     if (isVideo(item)) {
-      results.push({ id: item.id, name: item.name, section });
+      results.push({ id: item.id, name: item.name, section, type: 'video' });
+    } else if (isPdf(item)) {
+      results.push({ id: item.id, name: item.name, section, type: 'pdf' });
     } else if (item.mimeType === 'application/vnd.google-apps.folder') {
-      await _collectVideos(item.id, section || item.name, results);
+      await _collectFiles(item.id, section || item.name, results);
     }
   }
 }
 
-// โหลดวีดีโอทั้งหมดจาก folder (recursive)
+// โหลดไฟล์ทั้งหมด (video + pdf) จาก folder (recursive)
 export async function loadVideosFromFolder(folderId) {
-  const videos = [];
-  await _collectVideos(folderId, '', videos);
-  videos.sort((a, b) => a.name.localeCompare(b.name, 'th'));
-  return videos;
+  const files = [];
+  await _collectFiles(folderId, '', files);
+  files.sort((a, b) => a.name.localeCompare(b.name, 'th'));
+  return files;
 }
 
 // ดูว่า folder มีอะไรบ้างใน level บนสุด
@@ -115,6 +125,6 @@ export async function listFolderContents(folderId) {
   const items = await listFolder(folderId);
   return {
     folders: items.filter(i => i.mimeType === 'application/vnd.google-apps.folder'),
-    videos: items.filter(isVideo),
+    videos: items.filter(isDisplayable),
   };
 }
