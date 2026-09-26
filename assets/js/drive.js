@@ -103,21 +103,45 @@ export function getStoredUserInfo() {
 
 // ===== Progress sync via Drive =====
 const PROGRESS_FILENAME = 'gust-learning-progress.json';
+const PROGRESS_FILE_ID_LSKEY = 'gust_progress_file_id';
 let _progressFileId = null;
 
-export async function loadDriveProgress() {
-  const q = encodeURIComponent(`name='${PROGRESS_FILENAME}' and trashed=false`);
+function _getCachedFileId() {
+  return _progressFileId || localStorage.getItem(PROGRESS_FILE_ID_LSKEY) || null;
+}
+
+function _setCachedFileId(id) {
+  _progressFileId = id;
+  localStorage.setItem(PROGRESS_FILE_ID_LSKEY, id);
+}
+
+async function _findProgressFileId() {
+  const q = encodeURIComponent(`name = '${PROGRESS_FILENAME}' and trashed = false`);
   const data = await _driveRequest(
-    `https://www.googleapis.com/drive/v3/files?q=${q}&fields=files(id)&spaces=drive`
+    `https://www.googleapis.com/drive/v3/files?q=${q}&fields=files(id)&orderBy=modifiedTime+desc&pageSize=1`
   );
   if (data.files && data.files.length > 0) {
-    _progressFileId = data.files[0].id;
-    const token = getDriveToken();
-    const resp = await fetch(
-      `https://www.googleapis.com/drive/v3/files/${_progressFileId}?alt=media`,
-      { headers: { Authorization: 'Bearer ' + token } }
-    );
-    if (resp.ok) return resp.json();
+    _setCachedFileId(data.files[0].id);
+    return data.files[0].id;
+  }
+  return null;
+}
+
+export async function loadDriveProgress() {
+  let fileId = _getCachedFileId();
+  if (!fileId) fileId = await _findProgressFileId();
+  if (!fileId) return null;
+
+  const token = getDriveToken();
+  const resp = await fetch(
+    `https://www.googleapis.com/drive/v3/files/${fileId}?alt=media`,
+    { headers: { Authorization: 'Bearer ' + token } }
+  );
+  if (resp.ok) return resp.json();
+  // ไฟล์ถูกลบ → ล้าง cache
+  if (resp.status === 404) {
+    _progressFileId = null;
+    localStorage.removeItem(PROGRESS_FILE_ID_LSKEY);
   }
   return null;
 }
@@ -125,6 +149,8 @@ export async function loadDriveProgress() {
 export async function saveDriveProgress(progressData) {
   const token = getDriveToken();
   if (!token) return;
+
+  const fileId = _getCachedFileId();
   const boundary = 'gust_progress_boundary';
   const content = JSON.stringify(progressData);
   const body = [
@@ -138,11 +164,12 @@ export async function saveDriveProgress(progressData) {
     content,
     `--${boundary}--`,
   ].join('\r\n');
-  const url = _progressFileId
-    ? `https://www.googleapis.com/upload/drive/v3/files/${_progressFileId}?uploadType=multipart`
+
+  const url = fileId
+    ? `https://www.googleapis.com/upload/drive/v3/files/${fileId}?uploadType=multipart`
     : 'https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart';
   const resp = await fetch(url, {
-    method: _progressFileId ? 'PATCH' : 'POST',
+    method: fileId ? 'PATCH' : 'POST',
     headers: {
       Authorization: 'Bearer ' + token,
       'Content-Type': `multipart/related; boundary=${boundary}`,
@@ -151,7 +178,7 @@ export async function saveDriveProgress(progressData) {
   });
   if (resp.ok) {
     const result = await resp.json();
-    _progressFileId = result.id;
+    _setCachedFileId(result.id);
   }
 }
 

@@ -16,11 +16,10 @@ let isDriveCourse = false;
 let _driveProgressTimer = null;
 
 function scheduleDriveProgressSave() {
-  if (!isDriveCourse) return;
   clearTimeout(_driveProgressTimer);
   _driveProgressTimer = setTimeout(async () => {
     try {
-      await saveDriveProgress(loadProgress());
+      if (hasDriveAccess()) await saveDriveProgress(loadProgress());
     } catch (e) { /* silent fail */ }
   }, 1500);
 }
@@ -45,6 +44,17 @@ async function init() {
   document.getElementById('course-title').textContent = courseData.title;
   document.getElementById('btn-back').href = `index.html?subject=${subjectKey}`;
 
+  // โหลด Drive progress สำหรับทุก course (sync ข้าม browser)
+  if (hasDriveAccess()) {
+    try {
+      const driveProgress = await loadDriveProgress();
+      if (driveProgress) {
+        const local = loadProgress();
+        saveProgress({ ...local, ...driveProgress });
+      }
+    } catch {}
+  }
+
   // Drive-based course (biology)
   if (courseData.driveId) {
     isDriveCourse = true;
@@ -62,19 +72,10 @@ async function init() {
 let driveFolderStack = []; // [{id, name}]
 
 async function initDriveCourse() {
-  // ลอง silent refresh ก่อนถ้า token หมด
   if (!hasDriveAccess()) {
     const ok = await ensureDriveAccess();
     if (!ok) { showDriveConnectUI(); return; }
   }
-  // โหลด progress จาก Drive มาเขียนทับ localStorage
-  try {
-    const driveProgress = await loadDriveProgress();
-    if (driveProgress) {
-      const local = loadProgress();
-      saveProgress({ ...local, ...driveProgress });
-    }
-  } catch { /* ถ้าโหลดไม่ได้ใช้ local แทน */ }
   await driveNavigate(courseData.driveId, courseData.title, true);
 }
 
