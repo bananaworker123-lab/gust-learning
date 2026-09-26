@@ -1,6 +1,6 @@
 // Google Drive integration for Biology lessons
 // ต้องใส่ Client ID ที่ได้จาก Google Cloud Console
-const DRIVE_CLIENT_ID = ''; // ← ใส่ Client ID ของคุณที่นี่
+const DRIVE_CLIENT_ID = '700846047412-e5e9apph1s53d2h1jm3b8q8sbnvk2ukt.apps.googleusercontent.com';
 
 const DRIVE_SCOPE = 'https://www.googleapis.com/auth/drive.readonly';
 const TOKEN_KEY = 'bio_drive_token';
