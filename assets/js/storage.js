@@ -28,7 +28,8 @@ function getCourseProgress(courseId, totalLessons) {
   const p = loadProgress();
   const courseP = p[String(courseId)] || {};
   const done = Object.values(courseP).filter(Boolean).length;
-  return { done, total: totalLessons };
+  const total = totalLessons > 0 ? totalLessons : Object.keys(courseP).length;
+  return { done, total };
 }
 
 function isLessonWatched(courseId, videoId) {
