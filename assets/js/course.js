@@ -109,8 +109,8 @@ async function driveNavigate(folderId, folderName, reset = false) {
       document.getElementById('btn-mark-all').style.display = '';
       const allVideos = await loadVideosFromFolder(folderId);
       if (allVideos.length === 0) {
-        list.innerHTML = '<div style="padding:20px;text-align:center;color:var(--text-secondary)">ไม่พบวีดีโอในโฟลเดอร์นี้</div>';
-        wrapper.innerHTML = '<div class="video-placeholder"><div class="icon">📂</div><p>ไม่พบวีดีโอ</p></div>';
+        list.innerHTML = '<div style="padding:20px;text-align:center;color:var(--text-secondary);font-size:13px;line-height:1.6">ไม่พบไฟล์วีดีโอในโฟลเดอร์นี้<br>(อาจมีไฟล์ประเภทอื่น เช่น PDF)<br><br>กด ‹ กลับ เพื่อเลือกโฟลเดอร์อื่น</div>';
+        wrapper.innerHTML = '<div class="video-placeholder"><div class="icon">📄</div><p>โฟลเดอร์นี้ไม่มีวีดีโอ</p></div>';
         return;
       }
       courseData.lessons = allVideos.map((v, i) => ({
