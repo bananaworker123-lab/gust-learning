@@ -6,9 +6,8 @@ async function syncAndRender() {
   try {
     const driveProgress = await loadDriveProgress();
     if (driveProgress) {
-      const local = loadProgress();
-      const merged = { ...local, ...driveProgress };
-      saveProgress(merged);
+      // Drive คือ source of truth — เขียนทับ localStorage ทั้งหมด
+      saveProgress(driveProgress);
     }
   } catch {}
   const lastSubject = localStorage.getItem('lastSubject') || 'math';

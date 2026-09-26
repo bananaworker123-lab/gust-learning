@@ -44,14 +44,11 @@ async function init() {
   document.getElementById('course-title').textContent = courseData.title;
   document.getElementById('btn-back').href = `index.html?subject=${subjectKey}`;
 
-  // โหลด Drive progress สำหรับทุก course (sync ข้าม browser)
+  // Drive คือ source of truth — อ่านจาก Drive เขียนทับ localStorage
   if (hasDriveAccess()) {
     try {
       const driveProgress = await loadDriveProgress();
-      if (driveProgress) {
-        const local = loadProgress();
-        saveProgress({ ...local, ...driveProgress });
-      }
+      if (driveProgress) saveProgress(driveProgress);
     } catch {}
   }
 
