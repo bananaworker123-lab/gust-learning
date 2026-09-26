@@ -518,6 +518,12 @@ body {
   flex-shrink: 0;
 }
 
+.video-wrapper.drive-mode {
+  aspect-ratio: unset;
+  flex: 1;
+  min-height: 0;
+}
+
 .video-wrapper video {
   width: 100%;
   height: 100%;

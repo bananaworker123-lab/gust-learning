@@ -346,6 +346,7 @@ function renderVideoFallback(wrapper, courseIdNum, videoId) {
 function renderDrivePlayer(driveFileId) {
   const wrapper = document.getElementById('video-wrapper');
   if (player) { try { player.dispose(); } catch {} player = null; }
+  wrapper.classList.add('drive-mode');
   wrapper.innerHTML = `<iframe
     src="https://drive.google.com/file/d/${driveFileId}/preview"
     class="drive-iframe"
