@@ -2,9 +2,10 @@
 // ต้องใส่ Client ID ที่ได้จาก Google Cloud Console
 const DRIVE_CLIENT_ID = '700846047412-e5e9apph1s53d2h1jm3b8q8sbnvk2ukt.apps.googleusercontent.com';
 
-const DRIVE_SCOPE = 'https://www.googleapis.com/auth/drive.readonly https://www.googleapis.com/auth/drive.file';
+const DRIVE_SCOPE = 'https://www.googleapis.com/auth/drive.readonly https://www.googleapis.com/auth/drive.file profile email';
 const TOKEN_KEY = 'bio_drive_token';
 const TOKEN_EXP_KEY = 'bio_drive_token_exp';
+const USER_KEY = 'gust_user_info';
 
 let _tokenClient = null;
 
@@ -47,6 +48,7 @@ export function connectDrive(silent = false) {
     _tokenClient.callback = (resp) => {
       if (resp.error) { reject(new Error(resp.error)); return; }
       _saveToken(resp.access_token, resp.expires_in || 3600);
+      fetchAndStoreUserInfo(resp.access_token);
       resolve(resp.access_token);
     };
     // silent = ไม่แสดง account picker ถ้า login อยู่แล้ว
@@ -78,6 +80,25 @@ export function disconnectDrive() {
   }
   sessionStorage.removeItem(TOKEN_KEY);
   sessionStorage.removeItem(TOKEN_EXP_KEY);
+  sessionStorage.removeItem(USER_KEY);
+}
+
+export async function fetchAndStoreUserInfo(token) {
+  try {
+    const resp = await fetch('https://www.googleapis.com/oauth2/v2/userinfo', {
+      headers: { Authorization: 'Bearer ' + token },
+    });
+    if (resp.ok) {
+      const info = await resp.json();
+      sessionStorage.setItem(USER_KEY, JSON.stringify(info));
+      return info;
+    }
+  } catch {}
+  return null;
+}
+
+export function getStoredUserInfo() {
+  try { return JSON.parse(sessionStorage.getItem(USER_KEY)); } catch { return null; }
 }
 
 // ===== Progress sync via Drive =====

@@ -1,4 +1,44 @@
 // Dashboard logic
+import { hasDriveAccess, connectDrive, disconnectDrive, getStoredUserInfo, fetchAndStoreUserInfo } from './drive.js';
+
+// ===== Auth =====
+async function initAuth() {
+  const overlay = document.getElementById('login-overlay');
+  if (hasDriveAccess()) {
+    showUserInfo();
+    overlay.style.display = 'none';
+    document.body.classList.remove('auth-pending');
+    return;
+  }
+  // ไม่ได้ login → แสดง overlay
+  overlay.style.display = 'flex';
+  document.getElementById('btn-login').addEventListener('click', async () => {
+    try {
+      const token = await connectDrive(false);
+      await fetchAndStoreUserInfo(token);
+      showUserInfo();
+      overlay.style.display = 'none';
+      document.body.classList.remove('auth-pending');
+    } catch (e) {
+      alert('เข้าสู่ระบบไม่สำเร็จ: ' + e.message);
+    }
+  });
+}
+
+function showUserInfo() {
+  const info = getStoredUserInfo();
+  if (!info) return;
+  const el = document.getElementById('sidebar-user');
+  el.style.display = 'flex';
+  document.getElementById('user-avatar').src = info.picture || '';
+  document.getElementById('user-name').textContent = info.name || '';
+  document.getElementById('user-email').textContent = info.email || '';
+}
+
+document.getElementById('btn-logout').addEventListener('click', () => {
+  disconnectDrive();
+  location.reload();
+});
 
 function getCourseIcon(title) {
   const t = title.toLowerCase();
@@ -223,32 +263,6 @@ async function switchSubject(key) {
   localStorage.setItem('lastSubject', key);
 }
 
-// ===== Import / Export =====
-document.getElementById('btn-export').addEventListener('click', () => {
-  exportProgress();
-  showToast('ดาวน์โหลด progress สำเร็จ');
-});
-
-document.getElementById('btn-import').addEventListener('click', () => {
-  document.getElementById('import-input').click();
-});
-
-document.getElementById('import-input').addEventListener('change', async (e) => {
-  const file = e.target.files[0];
-  if (!file) return;
-  try {
-    await importProgress(file);
-    showToast('นำเข้าข้อมูลสำเร็จ');
-    if (currentSubject) {
-      buildHeaderStats(currentSubject);
-      renderCourses(currentSubject);
-    }
-  } catch (err) {
-    showToast('เกิดข้อผิดพลาด: ' + err.message);
-  }
-  e.target.value = '';
-});
-
 // ===== Subject tab clicks =====
 document.querySelectorAll('.subject-tab').forEach(tab => {
   tab.addEventListener('click', (e) => {
@@ -268,5 +282,6 @@ function showToast(msg) {
 }
 
 // ===== Init =====
+await initAuth();
 const lastSubject = localStorage.getItem('lastSubject') || 'math';
 switchSubject(lastSubject);
