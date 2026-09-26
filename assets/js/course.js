@@ -425,13 +425,20 @@ function renderDrivePlayer(driveFileId) {
 }
 
 // ===== Panel Toggle =====
+function setPanelOpen(open) {
+  const panel = document.getElementById('lesson-panel');
+  const backdrop = document.getElementById('panel-backdrop');
+  panel.classList.toggle('collapsed', !open);
+  backdrop.classList.toggle('open', open);
+}
+
 document.getElementById('btn-toggle-panel').addEventListener('click', () => {
   const panel = document.getElementById('lesson-panel');
-  const icon = document.querySelector('#btn-toggle-panel i');
-  panel.classList.toggle('collapsed');
-  const collapsed = panel.classList.contains('collapsed');
-  icon.className = collapsed ? 'fas fa-chevron-left' : 'fas fa-chevron-right';
-  // panel ซ่อนอยู่ → icon ‹ (กดเพื่อเปิด), panel แสดง → icon › (กดเพื่อซ่อน)
+  setPanelOpen(panel.classList.contains('collapsed'));
+});
+
+document.getElementById('panel-backdrop').addEventListener('click', () => {
+  setPanelOpen(false);
 });
 
 // ===== Controls =====
