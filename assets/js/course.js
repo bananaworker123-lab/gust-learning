@@ -482,13 +482,14 @@ document.getElementById('btn-mark-watched').addEventListener('click', () => {
 });
 
 document.getElementById('btn-mark-all').addEventListener('click', () => {
+  const allWatched = courseData.lessons.every(l => isLessonWatched(courseId, l.v));
   const progress = loadProgress();
   if (!progress[String(courseId)]) progress[String(courseId)] = {};
-  courseData.lessons.forEach(l => { progress[String(courseId)][String(l.v)] = true; });
+  courseData.lessons.forEach(l => { progress[String(courseId)][String(l.v)] = !allWatched; });
   saveProgress(progress);
   updateProgress();
   scheduleDriveProgressSave();
-  showToast('ทำเครื่องหมายทุกบทเรียนว่าดูแล้ว ✅');
+  showToast(allWatched ? 'ยกเลิกเครื่องหมายทั้งหมด' : 'ทำเครื่องหมายทุกบทเรียนว่าดูแล้ว ✅');
 });
 
 // ===== Toast =====
