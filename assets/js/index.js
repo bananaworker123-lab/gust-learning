@@ -1,7 +1,20 @@
 // Dashboard logic
-import { hasDriveAccess, connectDrive, disconnectDrive, getStoredUserInfo, fetchAndStoreUserInfo, getDriveToken } from './drive.js';
+import { hasDriveAccess, connectDrive, disconnectDrive, getStoredUserInfo, fetchAndStoreUserInfo, getDriveToken, loadDriveProgress } from './drive.js';
 
 // ===== Auth =====
+async function syncAndRender() {
+  try {
+    const driveProgress = await loadDriveProgress();
+    if (driveProgress) {
+      const local = loadProgress();
+      const merged = { ...local, ...driveProgress };
+      saveProgress(merged);
+    }
+  } catch {}
+  const lastSubject = localStorage.getItem('lastSubject') || 'math';
+  switchSubject(lastSubject);
+}
+
 async function initAuth() {
   const overlay = document.getElementById('login-overlay');
   if (hasDriveAccess()) {
@@ -11,9 +24,9 @@ async function initAuth() {
     showUserInfo();
     overlay.style.display = 'none';
     document.body.classList.remove('auth-pending');
+    await syncAndRender();
     return;
   }
-  // ไม่ได้ login → แสดง overlay
   overlay.style.display = 'flex';
   document.getElementById('btn-login').addEventListener('click', async () => {
     try {
@@ -22,6 +35,7 @@ async function initAuth() {
       showUserInfo();
       overlay.style.display = 'none';
       document.body.classList.remove('auth-pending');
+      await syncAndRender();
     } catch (e) {
       alert('เข้าสู่ระบบไม่สำเร็จ: ' + e.message);
     }
@@ -286,5 +300,3 @@ function showToast(msg) {
 
 // ===== Init =====
 await initAuth();
-const lastSubject = localStorage.getItem('lastSubject') || 'math';
-switchSubject(lastSubject);
