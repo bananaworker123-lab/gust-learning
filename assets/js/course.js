@@ -149,6 +149,9 @@ async function driveNavigate(folderId, folderName, reset = false) {
       courseData.lessons = allVideos.map((v) => ({
         v: v.id, t: v.name.replace(/\.[^.]+$/, ''), d: '', driveId: v.id, section: v.section, type: v.type || 'video',
       }));
+      console.log('[DEBUG] lessons loaded in folder:', folderId, 'first 3 IDs:', courseData.lessons.slice(0,3).map(l=>l.v));
+      const prog = loadProgress()[String(courseId)] || {};
+      console.log('[DEBUG] progress keys:', Object.keys(prog));
       renderLessonList();
       selectLesson(0);
       updateProgress();
