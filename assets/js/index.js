@@ -1,10 +1,13 @@
 // Dashboard logic
-import { hasDriveAccess, connectDrive, disconnectDrive, getStoredUserInfo, fetchAndStoreUserInfo } from './drive.js';
+import { hasDriveAccess, connectDrive, disconnectDrive, getStoredUserInfo, fetchAndStoreUserInfo, getDriveToken } from './drive.js';
 
 // ===== Auth =====
 async function initAuth() {
   const overlay = document.getElementById('login-overlay');
   if (hasDriveAccess()) {
+    if (!getStoredUserInfo()) {
+      await fetchAndStoreUserInfo(getDriveToken());
+    }
     showUserInfo();
     overlay.style.display = 'none';
     document.body.classList.remove('auth-pending');

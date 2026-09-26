@@ -15,7 +15,7 @@ function _isTokenValid() {
   return token && Date.now() < exp;
 }
 
-function getDriveToken() {
+export function getDriveToken() {
   return _isTokenValid() ? sessionStorage.getItem(TOKEN_KEY) : null;
 }
 
