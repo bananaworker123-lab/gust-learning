@@ -3,9 +3,9 @@
 const DRIVE_CLIENT_ID = '700846047412-e5e9apph1s53d2h1jm3b8q8sbnvk2ukt.apps.googleusercontent.com';
 
 const DRIVE_SCOPE = 'https://www.googleapis.com/auth/drive.readonly https://www.googleapis.com/auth/drive.file profile email';
-const TOKEN_KEY = 'bio_drive_token';
-const TOKEN_EXP_KEY = 'bio_drive_token_exp';
-const USER_KEY = 'gust_user_info';
+const TOKEN_KEY = 'gust_token_v2';
+const TOKEN_EXP_KEY = 'gust_token_exp_v2';
+const USER_KEY = 'gust_user_v2';
 
 let _tokenClient = null;
 
