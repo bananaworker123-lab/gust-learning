@@ -91,25 +91,21 @@ function isVideo(f) {
   return f.mimeType.startsWith('video/') || /\.(mp4|mov|avi|mkv|webm|m4v)$/i.test(f.name);
 }
 
-// โหลดวีดีโอทั้งหมดจาก root folder (รวม sub-folder ด้วย)
-export async function loadVideosFromFolder(rootFolderId) {
-  const items = await listFolder(rootFolderId);
-  const videos = [];
-
+async function _collectVideos(folderId, section, results) {
+  const items = await listFolder(folderId);
   for (const item of items) {
     if (isVideo(item)) {
-      videos.push({ id: item.id, name: item.name, section: '' });
+      results.push({ id: item.id, name: item.name, section });
     } else if (item.mimeType === 'application/vnd.google-apps.folder') {
-      const subItems = await listFolder(item.id);
-      for (const sub of subItems) {
-        if (isVideo(sub)) {
-          videos.push({ id: sub.id, name: sub.name, section: item.name });
-        }
-      }
+      await _collectVideos(item.id, section || item.name, results);
     }
   }
+}
 
-  // เรียงตามชื่อ
+// โหลดวีดีโอทั้งหมดจาก root folder (recursive ทุกชั้น)
+export async function loadVideosFromFolder(rootFolderId) {
+  const videos = [];
+  await _collectVideos(rootFolderId, '', videos);
   videos.sort((a, b) => a.name.localeCompare(b.name, 'th'));
   return videos;
 }
