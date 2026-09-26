@@ -55,10 +55,13 @@
     </div>
 
     <!-- Lesson list panel -->
-    <div class="lesson-panel">
+    <div class="lesson-panel" id="lesson-panel">
+      <button class="btn-toggle-panel" id="btn-toggle-panel" title="ซ่อน/แสดงรายการ">
+        <i class="fas fa-chevron-right"></i>
+      </button>
       <div class="lesson-panel-header">
         <div class="lesson-panel-title-row">
-          บทเรียน
+          <span id="lesson-panel-title">บทเรียน</span>
           <button class="btn-mark-all" id="btn-mark-all">ทำเครื่องหมายทั้งหมด</button>
         </div>
         <div class="lesson-filter-tabs" id="lesson-filter-tabs">

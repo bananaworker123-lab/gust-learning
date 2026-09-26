@@ -150,6 +150,19 @@ function showDriveFolderPicker(folders) {
 }
 
 function updateDriveBackBtn() {
+  // อัปเดตชื่อ folder ปัจจุบันใน header
+  const current = driveFolderStack[driveFolderStack.length - 1];
+  const titleEl = document.getElementById('lesson-panel-title');
+  if (titleEl) {
+    if (current && driveFolderStack.length > 1) {
+      titleEl.textContent = current.name;
+      titleEl.title = current.name;
+    } else {
+      titleEl.textContent = 'บทเรียน';
+      titleEl.removeAttribute('title');
+    }
+  }
+
   let btn = document.getElementById('drive-back-btn');
   const canGoBack = driveFolderStack.length > 1;
   if (!canGoBack) {
@@ -410,6 +423,15 @@ function renderDrivePlayer(driveFileId) {
     allow="autoplay"
     frameborder="0"></iframe>`;
 }
+
+// ===== Panel Toggle =====
+document.getElementById('btn-toggle-panel').addEventListener('click', () => {
+  const panel = document.getElementById('lesson-panel');
+  const icon = document.querySelector('#btn-toggle-panel i');
+  panel.classList.toggle('collapsed');
+  const collapsed = panel.classList.contains('collapsed');
+  icon.className = collapsed ? 'fas fa-chevron-left' : 'fas fa-chevron-right';
+});
 
 // ===== Controls =====
 document.getElementById('btn-prev').addEventListener('click', () => {
