@@ -146,8 +146,8 @@ async function driveNavigate(folderId, folderName, reset = false) {
         wrapper.innerHTML = '<div class="video-placeholder"><div class="icon">📄</div><p>โฟลเดอร์นี้ไม่มีวีดีโอ</p></div>';
         return;
       }
-      courseData.lessons = allVideos.map((v, i) => ({
-        v: i, t: v.name.replace(/\.[^.]+$/, ''), d: '', driveId: v.id, section: v.section, type: v.type || 'video',
+      courseData.lessons = allVideos.map((v) => ({
+        v: v.id, t: v.name.replace(/\.[^.]+$/, ''), d: '', driveId: v.id, section: v.section, type: v.type || 'video',
       }));
       renderLessonList();
       selectLesson(0);
