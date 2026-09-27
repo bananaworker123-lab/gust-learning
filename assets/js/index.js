@@ -125,17 +125,14 @@ async function loadSubject(key) {
 }
 
 function buildHeaderStats(data) {
-  const progress = loadProgress();
   let totalLessons = 0, doneLessons = 0, doneCourses = 0, inProgressCourses = 0;
 
   for (const sec of data.sections) {
     for (const course of sec.courses) {
-      const n = course.lessons.length;
-      totalLessons += n;
-      const cp = progress[String(course.id)] || {};
-      const done = Object.values(cp).filter(Boolean).length;
+      const { done, total } = getCourseProgress(course.id, course.lessons.length);
+      totalLessons += total;
       doneLessons += done;
-      if (done === n && n > 0) doneCourses++;
+      if (done === total && total > 0) doneCourses++;
       else if (done > 0) inProgressCourses++;
     }
   }
